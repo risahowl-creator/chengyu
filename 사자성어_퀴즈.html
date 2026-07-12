@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四字成語 정복 — 사자성어 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EDE7D6;
+    --paper-deep: #E3DBC5;
+    --ink: #201F1D;
+    --ink-soft: #52504A;
+    --seal: #AF2B22;
+    --seal-dark: #8B221B;
+    --jade: #3F6652;
+    --gold: #B4922A;
+    --line: rgba(32,31,29,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(180,146,42,0.07), transparent 45%),
+      radial-gradient(ellipse at 85% 90%, rgba(175,43,34,0.06), transparent 50%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  /* subtle paper grain */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    opacity:0.5;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(32,31,29,0.015) 0px, transparent 1px, transparent 2px),
+      repeating-linear-gradient(90deg, rgba(32,31,29,0.012) 0px, transparent 1px, transparent 2px);
+  }
+  .app{
+    width:100%;
+    max-width:560px;
+    position:relative;
+    z-index:1;
+  }
+  header{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.28em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:30px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  h1 .accent{ color:var(--seal); }
+  .subtitle{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+
+  /* brush divider */
+  .divider{
+    width:100%; height:14px; margin:18px 0 20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .divider svg{ width:180px; height:14px; opacity:0.55; }
+
+  /* ---- Screens ---- */
+  .card{
+    background: linear-gradient(180deg, #F6F1E4, #F1EADA);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 14px 30px -18px rgba(32,31,29,0.35);
+    padding:28px 24px 24px;
+    position:relative;
+  }
+  .card::before{ /* corner fold accent */
+    content:"";
+    position:absolute; top:0; right:0;
+    width:0; height:0;
+    border-style:solid;
+    border-width:0 22px 22px 0;
+    border-color:transparent var(--paper-deep) transparent transparent;
+    opacity:0.9;
+  }
+
+  /* ---- Setup screen ---- */
+  .mode-grid{
+    display:grid; gap:12px; margin-top:6px;
+  }
+  .mode-btn{
+    all:unset;
+    cursor:pointer;
+    display:flex; align-items:center; gap:14px;
+    padding:16px 16px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background: rgba(255,255,255,0.35);
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .mode-btn:hover{ border-color:var(--seal); background: rgba(175,43,34,0.05); transform: translateY(-1px); }
+  .mode-btn:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+  .mode-glyph{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--seal);
+    width:38px; height:38px;
+    border:1.5px solid var(--seal);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .mode-text b{ display:block; font-size:15.5px; }
+  .mode-text span{ display:block; font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+
+  .count-row{
+    display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;
+  }
+  .count-chip{
+    all:unset; cursor:pointer;
+    padding:8px 14px;
+    border:1px solid var(--line);
+    border-radius:20px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .count-chip.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+  .setup-label{
+    font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); margin-top:22px; margin-bottom:8px;
+  }
+  .start-btn{
+    all:unset; cursor:pointer;
+    display:block; text-align:center;
+    margin-top:24px;
+    padding:14px;
+    background:var(--seal);
+    color:#F6F1E4;
+    font-weight:700; font-size:15px; letter-spacing:0.02em;
+    border-radius:3px;
+    box-shadow: 0 6px 16px -6px rgba(175,43,34,0.6);
+  }
+  .start-btn:hover{ background:var(--seal-dark); }
+  .start-btn:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+
+  /* ---- Quiz screen ---- */
+  .quiz-top{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .progress-text{ font-size:12.5px; color:var(--ink-soft); letter-spacing:0.04em; }
+  .track{
+    height:4px; background:var(--line); border-radius:2px; overflow:hidden;
+    margin-top:6px;
+  }
+  .track-fill{
+    height:100%; background:var(--seal); border-radius:2px;
+    transition:width .35s ease;
+  }
+
+  .stamp-wrap{
+    width:44px; height:44px; position:relative; flex-shrink:0;
+  }
+  .stamp-ring{
+    width:100%; height:100%; border-radius:50%;
+    border:2px solid var(--seal);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Noto Serif KR', serif; font-weight:900; font-size:13px;
+    color:var(--seal);
+    background:rgba(175,43,34,0.04);
+  }
+
+  .prompt-zone{
+    text-align:center;
+    padding: 18px 8px 8px;
+  }
+  .prompt-label{
+    font-size:11.5px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .hanzi-hero{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:52px;
+    letter-spacing:0.06em;
+    line-height:1.1;
+    color:var(--ink);
+  }
+  .pinyin-line{
+    margin-top:6px;
+    font-size:15px;
+    color:var(--jade);
+    font-style:italic;
+    letter-spacing:0.02em;
+  }
+  .meaning-hero{
+    font-family:'Noto Serif KR', serif;
+    font-weight:600;
+    font-size:19px;
+    line-height:1.5;
+    color:var(--ink);
+    padding:6px 6px;
+  }
+
+  .options{
+    display:grid; gap:10px; margin-top:22px;
+  }
+  .opt{
+    all:unset; cursor:pointer;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px;
+    border:1.5px solid var(--line);
+    border-radius:3px;
+    background:rgba(255,255,255,0.4);
+    font-size:14.5px;
+    line-height:1.45;
+    transition: border-color .12s ease, background .12s ease, transform .12s ease;
+  }
+  .opt:hover{ border-color: var(--ink-soft); }
+  .opt:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+  .opt .tag{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    color:var(--ink-soft);
+    font-size:13px;
+    flex-shrink:0;
+  }
+  .opt.correct{
+    border-color:var(--jade);
+    background:rgba(63,102,82,0.1);
+  }
+  .opt.wrong{
+    border-color:var(--seal);
+    background:rgba(175,43,34,0.08);
+  }
+  .opt.disabled{ pointer-events:none; opacity:0.55; }
+  .opt.correct.disabled, .opt.wrong.disabled{ opacity:1; }
+
+  .feedback{
+    margin-top:16px;
+    min-height:22px;
+    text-align:center;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .feedback.good{ color:var(--jade); }
+  .feedback.bad{ color:var(--seal); }
+
+  .next-row{ margin-top:16px; display:flex; justify-content:center; }
+  .next-btn{
+    all:unset; cursor:pointer;
+    padding:11px 26px;
+    background:var(--ink);
+    color:var(--paper);
+    font-size:13.5px; font-weight:600;
+    border-radius:3px;
+    opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .next-btn.show{ opacity:1; pointer-events:auto; }
+  .next-btn:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+
+  /* ---- Results ---- */
+  .result-stamp{
+    width:120px; height:120px; margin:6px auto 18px;
+    border:3px solid var(--seal);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    transform:rotate(-6deg);
+    color:var(--seal);
+  }
+  .result-stamp b{ font-family:'Noto Serif KR', serif; font-size:34px; font-weight:900; line-height:1; }
+  .result-stamp span{ font-size:11px; letter-spacing:0.1em; margin-top:4px; }
+  .result-title{
+    text-align:center; font-family:'Noto Serif KR', serif; font-weight:700; font-size:20px; margin-bottom:6px;
+  }
+  .result-sub{ text-align:center; font-size:13.5px; color:var(--ink-soft); margin-bottom:20px; }
+
+  .miss-list{
+    display:grid; gap:8px; margin-top:6px; max-height:260px; overflow-y:auto; padding-right:4px;
+  }
+  .miss-item{
+    border:1px solid var(--line); border-radius:3px; padding:10px 12px;
+    background:rgba(255,255,255,0.35);
+    font-size:13px;
+  }
+  .miss-item .mh{ font-family:'Noto Serif KR', serif; font-weight:700; font-size:16px; }
+  .miss-item .mp{ color:var(--jade); font-style:italic; font-size:12px; margin-left:6px; }
+  .miss-item .mm{ color:var(--ink-soft); margin-top:3px; }
+
+  .result-actions{ display:flex; gap:10px; margin-top:22px; }
+  .ghost-btn{
+    all:unset; cursor:pointer; flex:1; text-align:center;
+    padding:12px; border:1.5px solid var(--ink); border-radius:3px;
+    font-size:13.5px; font-weight:600;
+  }
+  .ghost-btn:hover{ background:var(--ink); color:var(--paper); }
+  .ghost-btn.primary{ background:var(--seal); border-color:var(--seal); color:#F6F1E4; }
+  .ghost-btn.primary:hover{ background:var(--seal-dark); }
+
+  .hidden{ display:none !important; }
+
+  footer{
+    text-align:center; margin-top:22px; font-size:11.5px; color:var(--ink-soft); opacity:0.7;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+
+  @keyframes stampDown{
+    0%{ transform:scale(1.6) rotate(-14deg); opacity:0; }
+    60%{ transform:scale(0.92) rotate(-6deg); opacity:1; }
+    100%{ transform:scale(1) rotate(-6deg); opacity:1; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="eyebrow">四字成語 정복</div>
+    <h1>사자성어 <span class="accent">퀴즈</span></h1>
+    <div class="subtitle">중국어 사자성어(四字成語) 학습 카드 · 총 <span id="totalCount">58</span>개 수록</div>
+  </header>
+
+  <div class="divider">
+    <svg viewBox="0 0 180 14"><path d="M2 8 C 30 2, 45 14, 70 7 S 110 1, 130 8 S 160 13, 178 6" fill="none" stroke="#201F1D" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+
+  <!-- SETUP SCREEN -->
+  <div class="card" id="setupScreen">
+    <div class="setup-label">문제 방식 선택</div>
+    <div class="mode-grid">
+      <button class="mode-btn" data-mode="h2m">
+        <span class="mode-glyph">成→意</span>
+        <span class="mode-text"><b>성어 → 뜻 맞히기</b><span>한자 성어를 보고 알맞은 한국어 뜻을 고르세요</span></span>
+      </button>
+      <button class="mode-btn" data-mode="m2h">
+        <span class="mode-glyph">意→成</span>
+        <span class="mode-text"><b>뜻 → 성어 맞히기</b><span>한국어 뜻을 보고 알맞은 사자성어를 고르세요</span></span>
+      </button>
+      <button class="mode-btn" data-mode="p2h">
+        <span class="mode-glyph">拼→成</span>
+        <span class="mode-text"><b>병음 → 성어 맞히기</b><span>병음(拼音)을 보고 알맞은 한자 성어를 고르세요</span></span>
+      </button>
+      <button class="mode-btn" data-mode="mix">
+        <span class="mode-glyph">混合</span>
+        <span class="mode-text"><b>랜덤 혼합</b><span>세 가지 방식이 무작위로 섞여서 출제됩니다</span></span>
+      </button>
+    </div>
+
+    <div class="setup-label">문제 수</div>
+    <div class="count-row" id="countRow">
+      <button class="count-chip" data-count="10">10문제</button>
+      <button class="count-chip" data-count="20">20문제</button>
+      <button class="count-chip active" data-count="58">전체 58문제</button>
+    </div>
+
+    <button class="start-btn" id="startBtn">시작하기 →</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="card hidden" id="quizScreen">
+    <div class="quiz-top">
+      <div style="flex:1;">
+        <div class="progress-text"><span id="qIndex">1</span> / <span id="qTotal">10</span> 문제 · 정답 <span id="qScore">0</span></div>
+        <div class="track"><div class="track-fill" id="trackFill" style="width:0%"></div></div>
+      </div>
+      <div class="stamp-wrap"><div class="stamp-ring" id="streakStamp">0連</div></div>
+    </div>
+
+    <div class="prompt-zone">
+      <div class="prompt-label" id="promptLabel">성어를 보고 뜻을 고르세요</div>
+      <div id="promptMain"></div>
+    </div>
+
+    <div class="options" id="optionsWrap"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="next-row"><button class="next-btn" id="nextBtn">다음 문제 →</button></div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="card hidden" id="resultScreen">
+    <div class="result-stamp"><b id="resultPct">0%</b><span>정답률</span></div>
+    <div class="result-title" id="resultTitle">수고하셨습니다</div>
+    <div class="result-sub" id="resultSub">0 / 0 문제 정답</div>
+
+    <div id="missSection">
+      <div class="setup-label">다시 확인하면 좋은 성어</div>
+      <div class="miss-list" id="missList"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="ghost-btn" id="retryMissBtn">틀린 것만 다시</button>
+      <button class="ghost-btn primary" id="restartBtn">처음부터</button>
+    </div>
+  </div>
+
+  <footer>총 58개 사자성어 · 한자 · 병음 · 한국어 뜻 수록</footer>
+</div>
+
+<script>
+const IDIOMS = [
+  { no: 1, hanzi: "冰天雪地", pinyin: "bīng tiān xuě dì", meaning: "꽁꽁 얼어붙은 하늘과 눈으로 뒤덮인 땅. 무척 추운 날씨를 형용하는 표현." },
+  { no: 2, hanzi: "天寒地冻", pinyin: "tiān hán dì dòng", meaning: "날씨가 꽁꽁 얼어붙다." },
+  { no: 3, hanzi: "山清水秀", pinyin: "shān qīng shuǐ xiù", meaning: "산천수려." },
+  { no: 4, hanzi: "五彩缤纷", pinyin: "wǔ cǎi bīn fēn", meaning: "오색찬란하다." },
+  { no: 5, hanzi: "五光十色", pinyin: "wǔ guāng shí sè", meaning: "색깔이 다채롭고 아름답다." },
+  { no: 6, hanzi: "长命百岁", pinyin: "cháng mìng bǎi suì", meaning: "백 살까지 장수하다." },
+  { no: 7, hanzi: "成家立业", pinyin: "chéng jiā lì yè", meaning: "가정을 이루어 독립하다. 가업을 일으키다." },
+  { no: 8, hanzi: "川流不息", pinyin: "chuān liú bù xī", meaning: "(차, 배, 사람, 물건 등의 왕래가) 흘러가는 강물처럼 끊이지 않다." },
+  { no: 9, hanzi: "成千上万", pinyin: "chéng qiān shàng wàn", meaning: "아주 많은 수량." },
+  { no: 10, hanzi: "粗心大意", pinyin: "cū xīn dà yì", meaning: "(어떤 일을) 대충 대충 처리하다. 덤벙대다." },
+  { no: 11, hanzi: "满不在乎", pinyin: "mǎn bù zài hu", meaning: "전혀 마음에 두지 않다, 아무것도 개의치 않다." },
+  { no: 12, hanzi: "若无其事", pinyin: "ruò wú qí shì", meaning: "아무 일도 없는 것처럼 태연자약하다." },
+  { no: 13, hanzi: "大模大样", pinyin: "dà mú dà yàng", meaning: "대범한 모양. 거들먹거리는 모양." },
+  { no: 14, hanzi: "大摇大摆", pinyin: "dà yáo dà bǎi", meaning: "거들먹거리며 걷다." },
+  { no: 15, hanzi: "摇头摆尾", pinyin: "yáo tóu bǎi wěi", meaning: "머리와 꼬리를 흔들다(비유적으로 아첨하는 모습을 형용). 득의만만하다. 잘난 척하다." },
+  { no: 16, hanzi: "风风雨雨", pinyin: "fēng fēng yǔ yǔ", meaning: "비와 바람. 비유적으로 생활 속 온갖 곤란, 혹은 뒤에서 소문을 수군대는 모습." },
+  { no: 17, hanzi: "各式各样", pinyin: "gè shì gè yàng", meaning: "각양각색." },
+  { no: 18, hanzi: "四面八方", pinyin: "sì miàn bā fāng", meaning: "사방팔방. 이곳저곳." },
+  { no: 19, hanzi: "花言巧语", pinyin: "huā yán qiǎo yǔ", meaning: "감언이설." },
+  { no: 20, hanzi: "损人利己", pinyin: "sǔn rén lì jǐ", meaning: "남에게 손해를 끼치면서 자신의 이익만을 도모하다." },
+  { no: 21, hanzi: "画蛇添足", pinyin: "huà shé tiān zú", meaning: "사족. 쓸데없는 부분." },
+  { no: 22, hanzi: "狐假虎威", pinyin: "hú jiǎ hǔ wēi", meaning: "호가호위하다. 여우가 호랑이의 위세를 빌리다." },
+  { no: 23, hanzi: "自相矛盾", pinyin: "zì xiāng máo dùn", meaning: "자가당착이다." },
+  { no: 24, hanzi: "炯炯有神", pinyin: "jiǒng jiǒng yǒu shén", meaning: "눈빛이 형형하다. 반짝거리다." },
+  { no: 25, hanzi: "聚精会神", pinyin: "jù jīng huì shén", meaning: "정신을 한 곳에 모으다. 정신집중하다." },
+  { no: 26, hanzi: "全神贯注", pinyin: "quán shén guàn zhù", meaning: "온 정신을 집중하다. 전 신경을 한 데 모으다." },
+  { no: 27, hanzi: "灵机一动", pinyin: "líng jī yī dòng", meaning: "영감이 떠오르다. 아이디어가 머리를 스치다." },
+  { no: 28, hanzi: "千方百计", pinyin: "qiān fāng bǎi jì", meaning: "온갖 수단방법." },
+  { no: 29, hanzi: "来之不易", pinyin: "lái zhī bù yì", meaning: "모든 일이 쉽게 이루어지는 것은 아니다." },
+  { no: 30, hanzi: "问心无愧", pinyin: "wèn xīn wú kuì", meaning: "(자신의) 마음에 물어서 부끄러울 것이 없다. 떳떳하다." },
+  { no: 31, hanzi: "面黄肌瘦", pinyin: "miàn huáng jī shòu", meaning: "얼굴색이 누렇고 여위었다. 핼쑥하게 여윈 상태를 형용하는 표현." },
+  { no: 32, hanzi: "无精打采", pinyin: "wú jīng dǎ cǎi", meaning: "풀이 죽다. 의기소침하다." },
+  { no: 33, hanzi: "无可奈何", pinyin: "wú kě nài hé", meaning: "어찌할 도리가 없다." },
+  { no: 34, hanzi: "能歌善舞", pinyin: "néng gē shàn wǔ", meaning: "노래와 춤에 뛰어나다. 가무를 잘 한다." },
+  { no: 35, hanzi: "兴高采烈", pinyin: "xìng gāo cǎi liè", meaning: "아주 기분이 좋다. 기뻐 어쩔 줄 모르다." },
+  { no: 36, hanzi: "无忧无虑", pinyin: "wú yōu wú lǜ", meaning: "아무런 근심 걱정도 없다." },
+  { no: 37, hanzi: "七手八脚", pinyin: "qī shǒu bā jiǎo", meaning: "너나 할 것 없이 달려들어 무엇인가를 하다." },
+  { no: 38, hanzi: "手忙脚乱", pinyin: "shǒu máng jiǎo luàn", meaning: "너무 바빠서 허둥대다." },
+  { no: 39, hanzi: "神气活现", pinyin: "shén qì huó xiàn", meaning: "의기양양. 으스대는 모습." },
+  { no: 40, hanzi: "生气勃勃", pinyin: "shēng qì bó bó", meaning: "생기발랄하다." },
+  { no: 41, hanzi: "所作所为", pinyin: "suǒ zuò suǒ wéi", meaning: "행하는 모든 행위, 행동." },
+  { no: 42, hanzi: "所见所闻", pinyin: "suǒ jiàn suǒ wén", meaning: "보고 들은 것." },
+  { no: 43, hanzi: "实事求是", pinyin: "shí shì qiú shì", meaning: "실사구시. 사실에 근거하여 진실을 추구하다." },
+  { no: 44, hanzi: "心服口服", pinyin: "xīn fú kǒu fú", meaning: "말뿐만 아니라 마음으로도 탄복하다." },
+  { no: 45, hanzi: "万古长青", pinyin: "wàn gǔ cháng qīng", meaning: "영원히 변치 않다. '万古长春'이라고도 한다." },
+  { no: 46, hanzi: "震天动地", pinyin: "zhèn tiān dòng dì", meaning: "경천동지. 천지를 흔들거리게 할 정도의 충격." },
+  { no: 47, hanzi: "无论如何", pinyin: "wú lùn rú hé", meaning: "어쨌든. 어떻게 해서든." },
+  { no: 48, hanzi: "总而言之", pinyin: "zǒng ér yán zhī", meaning: "결론적으로 말하자면." },
+  { no: 49, hanzi: "小心翼翼", pinyin: "xiǎo xīn yì yì", meaning: "매우 신중하다. 아주 조심스럽다." },
+  { no: 50, hanzi: "自言自语", pinyin: "zì yán zì yǔ", meaning: "혼잣말을 하다." },
+  { no: 51, hanzi: "一干二净", pinyin: "yī gān èr jìng", meaning: "깨끗하게. 모조리." },
+  { no: 52, hanzi: "一举两得", pinyin: "yī jǔ liǎng dé", meaning: "일거양득." },
+  { no: 53, hanzi: "自始至终", pinyin: "zì shǐ zhì zhōng", meaning: "처음부터 끝까지. 시종일관." },
+  { no: 54, hanzi: "勇往直前", pinyin: "yǒng wǎng zhí qián", meaning: "용감무쌍하게 전진하다." },
+  { no: 55, hanzi: "一路平安", pinyin: "yī lù píng ān", meaning: "(길 떠나는 사람에게) 편안하게 가시기를 기원하다." },
+  { no: 56, hanzi: "一路顺风", pinyin: "yī lù shùn fēng", meaning: "(길 떠나는 사람에게) 여행길이 순조롭기를 기원하다." },
+  { no: 57, hanzi: "热气腾腾", pinyin: "rè qì téng téng", meaning: "열기가 넘쳐나다. 김이 무럭무럭 나다." },
+  { no: 58, hanzi: "鸡毛蒜皮", pinyin: "jī máo suàn pí", meaning: "닭털과 마늘 껍질. 너무나 사소하고 보잘 것 없는 물건 혹은 존재." },
+];
+
+// ---------- state ----------
+let mode = 'h2m';
+let count = 58;
+let queue = [];        // array of {idiom, qtype}
+let qi = 0;
+let score = 0;
+let streak = 0;
+let missed = [];        // idioms answered wrong (dedup by no)
+let answeredThisQ = false;
+
+const $ = (sel) => document.querySelector(sel);
+const setupScreen = $('#setupScreen');
+const quizScreen = $('#quizScreen');
+const resultScreen = $('#resultScreen');
+
+$('#totalCount').textContent = IDIOMS.length;
+
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-btn').forEach(b=>b.style.borderColor='');
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.style.background='');
+    btn.style.background = 'rgba(175,43,34,0.08)';
+    btn.style.borderColor = 'var(--seal)';
+  });
+});
+// default highlight
+document.querySelector('.mode-btn[data-mode="h2m"]').style.background='rgba(175,43,34,0.08)';
+document.querySelector('.mode-btn[data-mode="h2m"]').style.borderColor='var(--seal)';
+
+document.querySelectorAll('.count-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.count-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    count = parseInt(chip.dataset.count,10);
+  });
+});
+
+$('#startBtn').addEventListener('click', startQuiz);
+$('#nextBtn').addEventListener('click', nextQuestion);
+$('#restartBtn').addEventListener('click', ()=>{ showScreen('setup'); });
+$('#retryMissBtn').addEventListener('click', retryMissed);
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function pickN(arr, n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+
+function buildQueue(pool, n, forcedMode){
+  const chosen = pickN(pool, n);
+  return chosen.map(idiom=>{
+    let qtype = forcedMode;
+    if(forcedMode === 'mix'){
+      const types = ['h2m','m2h','p2h'];
+      qtype = types[Math.floor(Math.random()*types.length)];
+    }
+    return { idiom, qtype };
+  });
+}
+
+function startQuiz(){
+  score = 0; streak = 0; missed = [];
+  queue = buildQueue(IDIOMS, count, mode);
+  qi = 0;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function retryMissed(){
+  const pool = missed.slice();
+  if(pool.length === 0){ showScreen('setup'); return; }
+  score = 0; streak = 0;
+  const missedNos = pool.map(m=>m.no);
+  missed = [];
+  queue = buildQueue(pool, pool.length, mode);
+  qi = 0;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function showScreen(name){
+  setupScreen.classList.add('hidden');
+  quizScreen.classList.add('hidden');
+  resultScreen.classList.add('hidden');
+  if(name==='setup') setupScreen.classList.remove('hidden');
+  if(name==='quiz') quizScreen.classList.remove('hidden');
+  if(name==='result') resultScreen.classList.remove('hidden');
+}
+
+function labelFor(qtype){
+  if(qtype==='h2m') return '이 사자성어의 뜻으로 알맞은 것은?';
+  if(qtype==='m2h') return '이 뜻에 해당하는 사자성어는?';
+  if(qtype==='p2h') return '이 병음(拼音)에 해당하는 사자성어는?';
+}
+
+function renderQuestion(){
+  answeredThisQ = false;
+  const total = queue.length;
+  $('#qIndex').textContent = qi+1;
+  $('#qTotal').textContent = total;
+  $('#qScore').textContent = score;
+  $('#trackFill').style.width = ((qi)/total*100)+'%';
+  $('#streakStamp').textContent = streak + '連';
+  $('#feedback').textContent = '';
+  $('#feedback').className = 'feedback';
+  $('#nextBtn').classList.remove('show');
+
+  const {idiom, qtype} = queue[qi];
+  $('#promptLabel').textContent = labelFor(qtype);
+
+  const promptMain = $('#promptMain');
+  if(qtype === 'h2m'){
+    promptMain.innerHTML = `<div class="hanzi-hero">${idiom.hanzi}</div><div class="pinyin-line">${idiom.pinyin}</div>`;
+  } else if(qtype === 'm2h'){
+    promptMain.innerHTML = `<div class="meaning-hero">${idiom.meaning}</div>`;
+  } else if(qtype === 'p2h'){
+    promptMain.innerHTML = `<div class="hanzi-hero" style="font-size:26px; font-style:italic; color:var(--jade); font-family:'Noto Sans KR',sans-serif; font-weight:700;">${idiom.pinyin}</div>`;
+  }
+
+  // build options
+  const distractPool = IDIOMS.filter(i=>i.no !== idiom.no);
+  const distractors = pickN(distractPool, 3);
+  const options = shuffle([idiom, ...distractors]);
+  const wrap = $('#optionsWrap');
+  wrap.innerHTML = '';
+  const tags = ['A','B','C','D'];
+
+  options.forEach((opt,idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.dataset.no = opt.no;
+    let displayText;
+    if(qtype === 'h2m') displayText = opt.meaning;
+    else displayText = `${opt.hanzi} <span style="color:var(--jade); font-style:italic; font-size:12.5px;">${opt.pinyin}</span>`;
+    btn.innerHTML = `<span class="tag">${tags[idx]}</span><span>${displayText}</span>`;
+    btn.addEventListener('click', ()=> selectAnswer(btn, opt, idiom));
+    wrap.appendChild(btn);
+  });
+}
+
+function selectAnswer(btn, chosenOpt, correctIdiom){
+  if(answeredThisQ) return;
+  answeredThisQ = true;
+  const isCorrect = chosenOpt.no === correctIdiom.no;
+
+  document.querySelectorAll('#optionsWrap .opt').forEach(o=>{
+    o.classList.add('disabled');
+    if(parseInt(o.dataset.no,10) === correctIdiom.no) o.classList.add('correct');
+  });
+
+  if(isCorrect){
+    score++;
+    streak++;
+    $('#feedback').textContent = '정답입니다! 🖋';
+    $('#feedback').className = 'feedback good';
+  } else {
+    btn.classList.add('wrong');
+    streak = 0;
+    const correctText = queue[qi].qtype === 'h2m' ? correctIdiom.meaning : `${correctIdiom.hanzi} (${correctIdiom.pinyin})`;
+    $('#feedback').textContent = `오답입니다. 정답: ${correctText}`;
+    $('#feedback').className = 'feedback bad';
+    if(!missed.find(m=>m.no===correctIdiom.no)) missed.push(correctIdiom);
+  }
+  $('#qScore').textContent = score;
+  $('#streakStamp').textContent = streak + '連';
+  $('#nextBtn').classList.add('show');
+}
+
+function nextQuestion(){
+  qi++;
+  if(qi >= queue.length){
+    finishQuiz();
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishQuiz(){
+  const total = queue.length;
+  const pct = total ? Math.round((score/total)*100) : 0;
+  $('#resultPct').textContent = pct + '%';
+  $('#resultSub').textContent = `${score} / ${total} 문제 정답`;
+  let title = '수고하셨습니다';
+  if(pct === 100) title = '완벽합니다! 만점 도장';
+  else if(pct >= 80) title = '아주 훌륭합니다';
+  else if(pct >= 50) title = '조금만 더 다듬으면 됩니다';
+  else title = '반복 학습이 필요해요';
+  $('#resultTitle').textContent = title;
+
+  const missList = $('#missList');
+  missList.innerHTML = '';
+  const missSection = $('#missSection');
+  if(missed.length === 0){
+    missSection.classList.add('hidden');
+  } else {
+    missSection.classList.remove('hidden');
+    missed.forEach(m=>{
+      const div = document.createElement('div');
+      div.className = 'miss-item';
+      div.innerHTML = `<span class="mh">${m.hanzi}</span><span class="mp">${m.pinyin}</span><div class="mm">${m.meaning}</div>`;
+      missList.appendChild(div);
+    });
+  }
+  $('#trackFill').style.width='100%';
+  showScreen('result');
+}
+</script>
+</body>
+</html>
